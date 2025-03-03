@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mfumo wa Malipo ya Umeme</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #e0e7ff; /* Badala ya nyeupe, nimetumia bluu nyepesi */
+            color: #1e293b;
+        }
+
+        .container {
+            background-color: #f1f5f9; /* Background ya container sasa ni gray nyepesi */
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2, h3 {
+            color: #1a73e8;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 10px 10px 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #ffffea;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 10px;
+            top: 35px;
+            color: #cf80ff;
+        }
+
+        button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1557b0;
+        }
+
+        .pay-btn {
+            background-color: #28a745;
+            margin-right: 5px;
+        }
+
+        .pay-btn:hover {
+            background-color: #218838;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #f1f5f9; /* Badala ya nyeupe */
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        tr {
+            background-color: #f8fafc; /* Gray nyepesi kwa rows */
+            transition: background-color 0.3s;
+        }
+
+        tr:nth-child(even) {
+            background-color: #e2e8f0; /* Gray kidogo tofauti kwa even rows */
+        }
+
+        tr:hover {
+            background-color: #cbd5e1; /* Hover effect */
+        }
+
+        .days-normal {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .days-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .overdue-row {
+            background-color: #ffcaaa90;
+            color: #b900ff;
+        }
+
+        .overdue {
+            font-weight: bold;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { color: #dc3545; opacity: 1; }
+            50% { color: #dc3545; opacity: 0.3; }
+            100% { color: #dc3545; opacity: 1; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .powered-by {
+            animation: rainbow 20s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes rainbow {
+            0% { color: #ff0000; }    /* Nyekundu */
+            66% { color: #0000ff; }   /* Bluu */
+            83% { color: #4b0082; }   /* Indigo */
+            100% { color: #9400d3; }  /* Zambarau */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-bolt"></i> KING LOSHERS LUKU CREDIT 💳</h2>
+        
+        <form id="paymentForm">
+            <div class="form-group">
+                <label>Jina la Mpangaji:</label>
+                <i class="fas fa-user"></i>
+                <input type="text" id="tenantName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Kiasi (TZS):</label>
+                <i class="fas fa-money-bill"></i>
+                <input type="number" id="amount" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Tarehe:</label>
+                <i class="fas fa-calendar"></i>
+                <input type="date" id="date" required>
+            </div>
+            
+            <button type="submit"><i class="fas fa-save"></i> HIFADHI MALIPO⚖️</button>
+        </form>
+
+        <h3><i class="fas fa-history"></i> HISTORY YA MALIPO 🏥</h3>
+        <table id="paymentTable">
+            <thead>
+                <tr>
+                    <th>Jina</th>
+                    <th>Kiasi</th>
+                    <th>Tarehe</th>
+                    <th>Siku Zilizobaki</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="paymentList"></tbody>
+        </table>
+    </div>
+    <div class="footer">
+        This program powered by <span class="powered-by">MALOSHA</span>
+    </div>
+
+    <script>
+        let editIndex = -1;
+
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const tenantName = document.getElementById('tenantName').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('date').value;
+
+            const daysDue = amount === 1000 ? 7 : amount === 2000 ? 14 : 30;
+            const dueDate = new Date(date);
+            dueDate.setDate(dueDate.getDate() + daysDue);
+
+            const payment = {
+                name: tenantName,
+                amount: amount,
+                date: date,
+                dueDate: dueDate.toISOString().split('T')[0],
+                paid: true
+            };
+
+            let payments = JSON.parse(localStorage.getItem('electricityPayments')) || [];
+
+            if (editIndex === -1) {
+                payments.push(payment);
+            } else {
+                payments[editIndex] = payment;
+                editIndex = -1;
+            }
+
+            localStorage.setItem('electricityPayments', JSON.stringify(payments));
+            this.reset();
+            displayPayments();
+            document.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> Rekodi Malipo';
+        });
+
+        function calculateDaysRemaining(dueDate) {
+            const today = new Date();
+            const due = new Date(dueDate);
+            const diffTime = due - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function displayPayments() {
+            const paymentList = document.getElementById('paymentList');
+            let payments = JSON.parse(localStorage.getItem('electricityPayments')) || [];
+            paymentList.innerHTML = '';
+
+            payments.forEach((payment, index) => {
+                const daysRemaining = calculateDaysRemaining(payment.dueDate);
+                const row = document.createElement('tr');
+                
+                let statusClass = '';
+                let statusText = '';
+
+                if (daysRemaining > 2) {
+                    statusClass = 'days-normal';
+                    statusText = `${daysRemaining} siku zilizobaki`;
+                } else if (daysRemaining > 0) {
+                    statusClass = 'days-warning';
+                    statusText = `${daysRemaining} siku zilizobaki`;
+                } else {
+                    row.classList.add('overdue-row');
+                    statusText = `<span class="overdue">Anadaiwa (Ilipaswa kulipwa ${payment.dueDate})</span>`;
+                }
+
+                row.innerHTML = `
+                    <td>${payment.name}</td>
+                    <td>${payment.amount.toLocaleString()} TZS</td>
+                    <td>${payment.date}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>
+                        ${daysRemaining <= 0 ? 
+                            `<button class="pay-btn" onclick="preparePayment(${index})"><i class="fas fa-check"></i> Lipa</button>` 
+                            : ''}
+                        <button class="delete-btn" onclick="deletePayment(${index})"><i class="fas fa-trash"></i> Futa</button>
+                    </td>
+                `;
+                paymentList.appendChild(row);
+            });
+        }
+
+        function preparePayment(index) {
+            let payments = JSON.parse(localStorage.getItem('electricityPayments'));
+            const payment = payments[index];
+
+            document.getElementById('tenantName').value = payment.name;
+            document.getElementById('amount').value = '';
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+            document.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> Sasisha Malipo';
+            editIndex = index;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deletePayment(index) {
+            if (confirm('Je, una uhakika unataka kufuta malipo haya?')) {
+                let payments = JSON.parse(localStorage.getItem('electricityPayments'));
+                payments.splice(index, 1);
+                localStorage.setItem('electricityPayments', JSON.stringify(payments));
+                displayPayments();
+            }
+        }
+
+        window.onload = displayPayments;
+    </script>
+</body>
+</html>
